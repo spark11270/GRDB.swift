@@ -44,12 +44,20 @@ if ProcessInfo.processInfo.environment["SPI_BUILDER"] == "1" {
 //swiftSettings.append(.define("SQLITE_HAS_CODEC"))
 //swiftSettings.append(.define("SQLCipher"))
 
+// Custom SQLite (binary xcframework) shared by GRDBSQLite, GRDB, and consuming apps.
+// SwiftPM package identity from this URL is `sqlite-pipeline`.
+// Use `branch:` while iterating; pin with `from:` / `exact:` / `revision:` for reproducible builds.
+dependencies.append(
+    .package(url: "https://github.com/plangrid/sqlite-pipeline.git", from: "1.0.0")
+)
+
 let package = Package(
     name: "GRDB",
     defaultLocalization: "en", // for tests
     platforms: [
         .iOS(.v13),
-        .macOS(.v10_15),
+        // Must be >= sqlite-pipeline macOS (.v11) because GRDB / GRDBSQLite link its sqlite3 product.
+        .macOS(.v11),
         .tvOS(.v13),
         .watchOS(.v7),
     ],
@@ -62,9 +70,15 @@ let package = Package(
     dependencies: dependencies,
     targets: [
         // GRDB+SQLCipher: Delete the GRDBSQLite target
-        .systemLibrary(
+        .target(
             name: "GRDBSQLite",
-            providers: [.apt(["libsqlite3-dev"])]),
+            dependencies: [
+                .product(name: "sqlite3", package: "sqlite-pipeline"),
+            ],
+//            path: "Sources/GRDBSQLite",
+//            sources: ["shim.c"],
+//            publicHeadersPath: "include"
+        ),
         // GRDB+SQLCipher: Uncomment the GRDBSQLCipher target
         //.target(
         //    name: "GRDBSQLCipher",
@@ -75,6 +89,9 @@ let package = Package(
             dependencies: [
                 // GRDB+SQLCipher: Delete the GRDBSQLite dependency
                 .target(name: "GRDBSQLite"),
+                // Same sqlite3 binary as GRDBSQLite so Swift `import GRDBSQLite` and any
+                // C headers (`<sqlite3.h>`) resolve to one image (avoids system SQLite).
+                .product(name: "sqlite3", package: "sqlite-pipeline"),
                 // GRDB+SQLCipher: Uncomment the SQLCipher and GRDBSQLCipher dependencies
                 //.product(name: "SQLCipher", package: "SQLCipher.swift"),
                 //.target(name: "GRDBSQLCipher"),
