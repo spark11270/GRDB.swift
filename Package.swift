@@ -30,28 +30,43 @@ if ProcessInfo.processInfo.environment["SPI_BUILDER"] == "1" {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
 }
 
+// Custom SQLite (binary xcframework) shared by GRDBSQLite, GRDB, and consuming apps.
+// SwiftPM package identity from this URL is `sqlite-pipeline`.
+// Use `branch:` while iterating; pin with `from:` / `exact:` / `revision:` for reproducible builds.
+dependencies.append(
+    .package(url: "https://github.com/plangrid/sqlite-pipeline.git", from: "1.0.0")
+)
+
 let package = Package(
     name: "GRDB",
     defaultLocalization: "en", // for tests
     platforms: [
         .iOS(.v11),
-        .macOS(.v10_13),
+        .macOS(.v11),
         .tvOS(.v11),
         .watchOS(.v4),
     ],
     products: [
-        .library(name: "CSQLite", targets: ["CSQLite"]),
+        .library(name: "GRDBSQLite", targets: ["GRDBSQLite"]),
         .library(name: "GRDB", targets: ["GRDB"]),
         .library(name: "GRDB-dynamic", type: .dynamic, targets: ["GRDB"]),
     ],
     dependencies: dependencies,
     targets: [
-        .systemLibrary(
-            name: "CSQLite",
-            providers: [.apt(["libsqlite3-dev"])]),
+        .target(
+            name: "GRDBSQLite",
+            dependencies: [
+                .product(name: "sqlite3", package: "sqlite-pipeline"),
+            ],
+        ),
         .target(
             name: "GRDB",
-            dependencies: ["CSQLite"],
+            dependencies: [
+                .target(name: "GRDBSQLite"),
+                // Same sqlite3 binary as GRDBSQLite so Swift `import GRDBSQLite` and any
+                // C headers (`<sqlite3.h>`) resolve to one image (avoids system SQLite).
+                .product(name: "sqlite3", package: "sqlite-pipeline"),
+            ],
             path: "GRDB",
             resources: [.copy("PrivacyInfo.xcprivacy")],
             cSettings: cSettings,

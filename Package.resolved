@@ -1,0 +1,15 @@
+{
+  "originHash" : "c3c5b6daab5ee3ae5023f577fa68331e3ad824b2c76e998ce39c4284cb8eb020",
+  "pins" : [
+    {
+      "identity" : "sqlite-pipeline",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/plangrid/sqlite-pipeline.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "0cf3aba9b61ba99ce8292a01f4bb7f7263737a72"
+      }
+    }
+  ],
+  "version" : 3
+}
