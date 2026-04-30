@@ -41,10 +41,10 @@ let package = Package(
     name: "GRDB",
     defaultLocalization: "en", // for tests
     platforms: [
-        .iOS(.v11),
-        .macOS(.v11),
-        .tvOS(.v11),
-        .watchOS(.v4),
+        .iOS(.v13),
+        .macOS(.v13),
+        .tvOS(.v13),
+        .watchOS(.v7),
     ],
     products: [
         .library(name: "GRDBSQLite", targets: ["GRDBSQLite"]),
