@@ -34,7 +34,7 @@ if ProcessInfo.processInfo.environment["SPI_BUILDER"] == "1" {
 // SwiftPM package identity from this URL is `sqlite-pipeline`.
 // Use `branch:` while iterating; pin with `from:` / `exact:` / `revision:` for reproducible builds.
 dependencies.append(
-    .package(url: "https://github.com/plangrid/sqlite-pipeline.git", from: "1.0.0")
+    .package(url: "git@github.com:plangrid/sqlite-pipeline.git", from: "1.0.0")
 )
 
 let package = Package(
